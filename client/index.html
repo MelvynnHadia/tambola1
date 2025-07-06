@@ -1,57 +1,59 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Online Tambola Game</title>
+  <title>Tambola</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="screen-join">
-    <h1>Online Tambola</h1>
-    <input type="text" id="nameInput" placeholder="Enter your name"><br>
-    <input type="text" id="roomCodeInput" placeholder="Enter room code to join"><br>
-    <button id="joinBtn">Join Room</button>
-    <button id="hostBtn">Host Room</button>
+<div id="screen-join">
+  <h1>Tambola</h1>
+  <input type="text" id="nameInput" placeholder="Enter your name"><br>
+  <input type="text" id="roomCodeInput" placeholder="Enter room code"><br>
+  <button id="joinBtn">Join Game</button>
+  <button id="hostBtn">Host Game</button>
+</div>
+
+<div id="screen-lobby" style="display:none;">
+  <h2>Lobby</h2>
+  <p>Room Code: <span id="lobby-room-code"></span></p>
+  <div id="host-controls">
+    <input type="number" id="minPlayers" min="2" value="2">
+    <button id="setMinBtn">Set</button>
+    <button id="startBtn">Start Game</button>
+  </div>
+  <h3>Players:</h3>
+  <ul id="player-list"></ul>
+</div>
+
+<div id="screen-game" style="display:none;">
+  <h1 id="drawn-number">Waiting...</h1>
+  <div id="ticket"></div>
+
+  <div id="game-host-controls" style="display:none;">
+    <button id="drawBtn">Draw Number</button>
+    <button id="endBtn">End Game</button>
   </div>
 
-  <div id="screen-lobby" style="display: none;">
-    <h2>Lobby</h2>
-    <p>Room Code: <span id="lobby-room-code"></span></p>
-    <div id="host-controls">
-      <label for="minPlayers">Min Players:</label>
-      <input type="number" id="minPlayers" value="2" min="2">
-      <button id="setMinBtn">Set</button>
-      <button id="startBtn">Start Game</button>
-    </div>
-    <p id="waitingText" style="display: none;">Waiting for host to start the game...</p>
-    <h3>Players Joined:</h3>
-    <ul id="player-list"></ul>
+  <div id="game-player-controls">
+    <button id="claimFullHouse">Claim Full House</button>
+    <button id="claimLucky5">Claim Lucky 5</button>
+    <button id="claimCorner">Claim Corner</button>
   </div>
 
-  <div id="screen-game" style="display: none;">
-    <h1 id="drawn-number">Waiting...</h1>
-    <div id="ticket"></div>
+  <h3>Claims</h3>
+  <ol id="leaderboard"></ol>
 
-    <div id="game-host-controls" style="display: none;">
-      <button id="drawBtn">Draw Number</button>
-      <button id="endBtn">End Game</button>
-    </div>
+  <div id="error-box" style="display:none;">❌ Invalid Claim</div>
 
-    <div id="game-player-controls">
-      <button id="claimBtn">Claim Full House</button>
-    </div>
-
-    <h3>🏆 Full House Leaderboard</h3>
-    <ol id="leaderboard"></ol>
-
-    <div id="error-box" style="display: none;">
-      ❌ Not a valid Full House
-      <button onclick="document.getElementById('error-box').style.display='none'">×</button>
-    </div>
+  <div id="chat-container">
+    <div id="chat-box"></div>
+    <input id="chat-input" placeholder="Type message...">
+    <button id="chat-send">Send</button>
   </div>
+</div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="client.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
 </body>
 </html>
