@@ -29,6 +29,15 @@ io.on('connection', socket => {
     socket.join(roomCode);
     socket.emit('host-created', { roomCode });
     io.to(roomCode).emit('lobby-update', getLobbyInfo(roomCode));
+
+    socket.on('host-end', ({ roomCode }) => {
+    const room = rooms[roomCode];
+    if (room && room.hostId === socket.id) {
+    io.to(roomCode).emit('game-ended');
+    delete rooms[roomCode]; // Optionally clean up the room
+  }
+});
+
   });
 
   socket.on('player-join', ({ name, roomCode }) => {
