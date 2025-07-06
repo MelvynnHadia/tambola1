@@ -130,10 +130,15 @@ socket.on('number-drawn', number => {
 });
 
 socket.on('claim-winner', ({ name, type }) => {
-  const li = document.createElement('li');
-  li.innerText = `${type.toUpperCase()}: ${name}`;
-  leaderboard.appendChild(li);
+  const listId = `leaderboard-${type}`;
+  const list = document.getElementById(listId);
+  if (list) {
+    const li = document.createElement('li');
+    li.innerText = name;
+    list.appendChild(li);
+  }
 });
+
 
 socket.on('invalid-claim', () => {
   errorBox.style.display = 'inline-block';
