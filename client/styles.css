@@ -1,67 +1,55 @@
-
 body {
-  font-family: Arial, sans-serif;
+  font-family: sans-serif;
   text-align: center;
-  background-color: #f4f4f4;
   margin: 0;
   padding: 20px;
+  background: #fafafa;
 }
-h1, h2 { margin-bottom: 10px; }
 input, button {
-  padding: 8px;
-  margin: 6px;
+  margin: 5px;
+  padding: 10px;
   font-size: 16px;
 }
 button {
-  cursor: pointer;
-  border: none;
-  background-color: black;
+  background: black;
   color: white;
+  border: none;
   border-radius: 4px;
-}
-button:hover { background-color: #444; }
-#player-list { list-style: none; padding: 0; }
-#player-list li { font-weight: bold; }
-#ticket {
-  margin: 20px auto;
-  max-width: 400px;
 }
 .ticket-table {
   border-collapse: collapse;
-  margin: auto;
+  margin: 10px auto;
 }
 .ticket-cell {
-  width: 40px;
-  height: 40px;
-  border: 1px solid black;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
   text-align: center;
-  vertical-align: middle;
-  font-size: 18px;
 }
-.ticket-cell.highlighted {
-  background-color: black;
+.highlighted {
+  background: black;
   color: white;
 }
-#drawn-number {
-  font-size: 48px;
-  font-weight: bold;
-  color: darkred;
-}
-#leaderboard {
-  list-style: decimal;
-  margin-top: 20px;
-  padding-left: 0;
-}
-#leaderboard li {
-  margin: 5px 0;
-  font-weight: bold;
-  color: darkgreen;
-}
 #error-box {
-  margin-top: 15px;
+  margin-top: 10px;
+  background: pink;
   padding: 10px;
-  background: #ffcaca;
-  color: darkred;
   display: inline-block;
-  border-radius: 6px;
+}
+#chat-container {
+  margin-top: 20px;
+}
+#chat-box {
+  height: 100px;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+@media only screen and (max-width: 600px) {
+  .ticket-cell {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
 }
