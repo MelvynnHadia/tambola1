@@ -1,10 +1,8 @@
 const socket = io();
 
-// DOM elements
 const screenJoin = document.getElementById('screen-join');
 const screenLobby = document.getElementById('screen-lobby');
 const screenGame = document.getElementById('screen-game');
-
 const joinBtn = document.getElementById('joinBtn');
 const hostBtn = document.getElementById('hostBtn');
 const setMinBtn = document.getElementById('setMinBtn');
@@ -15,18 +13,21 @@ const drawnNumberEl = document.getElementById('drawn-number');
 const ticketContainer = document.getElementById('ticket');
 const drawBtn = document.getElementById('drawBtn');
 const endBtn = document.getElementById('endBtn');
-const claimBtn = document.getElementById('claimBtn');
-const waitingText = document.getElementById('waitingText');
+const claimFullHouseBtn = document.getElementById('claimFullHouse');
+const claimLucky5Btn = document.getElementById('claimLucky5');
+const claimCornerBtn = document.getElementById('claimCorner');
 const leaderboard = document.getElementById('leaderboard');
 const errorBox = document.getElementById('error-box');
+const chatBox = document.getElementById('chat-box');
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
 
 let myTicket = [];
 let drawnNumbers = [];
 let isHost = false;
 let roomCode = '';
-let hasClaimed = false;
+let hasClaimed = { fullHouse: false, lucky5: false, corner: false };
 
-// Handle Host button
 hostBtn.onclick = () => {
   const name = document.getElementById('nameInput').value.trim();
   const code = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -36,7 +37,6 @@ hostBtn.onclick = () => {
   socket.emit('host-create', { name, roomCode });
 };
 
-// Handle Join button
 joinBtn.onclick = () => {
   const name = document.getElementById('nameInput').value.trim();
   const code = document.getElementById('roomCodeInput').value.trim();
@@ -45,38 +45,34 @@ joinBtn.onclick = () => {
   socket.emit('player-join', { name, roomCode });
 };
 
-// Set minimum players
 setMinBtn.onclick = () => {
   const min = parseInt(minPlayersInput.value);
   if (isNaN(min) || min < 2) return alert('Enter valid number >= 2');
   socket.emit('set-min-players', { roomCode, min });
 };
 
-// Host starts the game
-startBtn.onclick = () => {
-  socket.emit('host-start', { roomCode });
-};
+startBtn.onclick = () => socket.emit('host-start', { roomCode });
+drawBtn.onclick = () => socket.emit('host-draw', { roomCode });
+endBtn.onclick = () => location.reload();
 
-// Host draws number
-drawBtn.onclick = () => {
-  socket.emit('host-draw', { roomCode });
-};
+claimFullHouseBtn.onclick = () => claim('fullHouse');
+claimLucky5Btn.onclick = () => claim('lucky5');
+claimCornerBtn.onclick = () => claim('corner');
 
-// Host ends game
-endBtn.onclick = () => {
-  location.reload(); // reload to reset everything
-};
-
-// Player claims full house
-claimBtn.onclick = () => {
-  if (!hasClaimed) {
-    socket.emit('claim-full-house', { roomCode, ticket: myTicket, drawn: drawnNumbers });
-    hasClaimed = true;
-    claimBtn.disabled = true;
+chatSend.onclick = () => {
+  const msg = chatInput.value.trim();
+  if (msg) {
+    socket.emit('send-chat', { roomCode, name: 'Player', message: msg });
+    chatInput.value = '';
   }
 };
 
-// Socket Listeners
+function claim(type) {
+  if (hasClaimed[type]) return;
+  socket.emit('claim', { roomCode, type, ticket: myTicket, drawn: drawnNumbers });
+  hasClaimed[type] = true;
+}
+
 socket.on('host-created', ({ roomCode }) => {
   switchToLobby();
   document.getElementById('lobby-room-code').innerText = roomCode;
@@ -86,7 +82,6 @@ socket.on('host-created', ({ roomCode }) => {
 socket.on('player-joined-success', ({ roomCode }) => {
   switchToLobby();
   document.getElementById('lobby-room-code').innerText = roomCode;
-  waitingText.style.display = 'block';
   document.getElementById('host-controls').style.display = 'none';
 });
 
@@ -99,9 +94,13 @@ socket.on('lobby-update', ({ players }) => {
   });
 });
 
-socket.on('ticket', (ticket) => {
+socket.on('ticket', ticket => {
   myTicket = ticket;
   renderTicket();
+});
+
+socket.on('host-started', () => {
+  renderHostGrid();
 });
 
 socket.on('game-started', () => {
@@ -111,15 +110,16 @@ socket.on('game-started', () => {
   if (isHost) document.getElementById('game-host-controls').style.display = 'block';
 });
 
-socket.on('number-drawn', (number) => {
+socket.on('number-drawn', number => {
   drawnNumbers.push(number);
   drawnNumberEl.innerText = number;
   renderTicket();
+  if (isHost) renderHostGrid();
 });
 
-socket.on('full-house-winner', (name) => {
+socket.on('claim-winner', ({ name, type }) => {
   const li = document.createElement('li');
-  li.innerText = name;
+  li.innerText = `${type.toUpperCase()}: ${name}`;
   leaderboard.appendChild(li);
 });
 
@@ -127,7 +127,13 @@ socket.on('invalid-claim', () => {
   errorBox.style.display = 'inline-block';
 });
 
-// Utility Functions
+socket.on('chat-msg', ({ name, message }) => {
+  const msg = document.createElement('div');
+  msg.innerText = `${name}: ${message}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
 function switchToLobby() {
   screenJoin.style.display = 'none';
   screenLobby.style.display = 'block';
@@ -138,7 +144,6 @@ function renderTicket() {
   ticketContainer.innerHTML = '';
   const table = document.createElement('table');
   table.className = 'ticket-table';
-
   myTicket.forEach(row => {
     const tr = document.createElement('tr');
     row.forEach(num => {
@@ -146,14 +151,29 @@ function renderTicket() {
       td.className = 'ticket-cell';
       if (num) {
         td.innerText = num;
-        if (drawnNumbers.includes(num)) {
-          td.classList.add('highlighted');
-        }
+        if (drawnNumbers.includes(num)) td.classList.add('highlighted');
       }
       tr.appendChild(td);
     });
     table.appendChild(tr);
   });
+  ticketContainer.appendChild(table);
+}
 
+function renderHostGrid() {
+  ticketContainer.innerHTML = '';
+  const table = document.createElement('table');
+  table.className = 'ticket-table';
+  for (let i = 1; i <= 90; i += 10) {
+    const tr = document.createElement('tr');
+    for (let j = i; j < i + 10; j++) {
+      const td = document.createElement('td');
+      td.className = 'ticket-cell';
+      td.innerText = j;
+      if (drawnNumbers.includes(j)) td.classList.add('highlighted');
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
   ticketContainer.appendChild(table);
 }
