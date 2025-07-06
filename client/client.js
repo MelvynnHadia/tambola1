@@ -26,12 +26,14 @@ let myTicket = [];
 let drawnNumbers = [];
 let isHost = false;
 let roomCode = '';
+let playerName = '';
 let hasClaimed = { fullHouse: false, lucky5: false, corner: false };
 
 hostBtn.onclick = () => {
   const name = document.getElementById('nameInput').value.trim();
   const code = Math.random().toString(36).substring(2, 7).toUpperCase();
   if (!name) return alert('Enter name');
+  playerName = name;
   roomCode = code;
   isHost = true;
   socket.emit('host-create', { name, roomCode });
@@ -41,6 +43,7 @@ joinBtn.onclick = () => {
   const name = document.getElementById('nameInput').value.trim();
   const code = document.getElementById('roomCodeInput').value.trim();
   if (!name || !code) return alert('Enter name and room code');
+  playerName = name;
   roomCode = code;
   socket.emit('player-join', { name, roomCode });
 };
@@ -62,7 +65,7 @@ claimCornerBtn.onclick = () => claim('corner');
 chatSend.onclick = () => {
   const msg = chatInput.value.trim();
   if (msg) {
-    socket.emit('send-chat', { roomCode, name: 'Player', message: msg });
+    socket.emit('send-chat', { roomCode, name: playerName, message: msg });
     chatInput.value = '';
   }
 };
@@ -107,7 +110,14 @@ socket.on('game-started', () => {
   screenLobby.style.display = 'none';
   screenJoin.style.display = 'none';
   screenGame.style.display = 'block';
-  if (isHost) document.getElementById('game-host-controls').style.display = 'block';
+
+  if (isHost) {
+    document.getElementById('game-host-controls').style.display = 'block';
+    document.getElementById('game-player-controls').style.display = 'none';
+  } else {
+    document.getElementById('game-host-controls').style.display = 'none';
+    document.getElementById('game-player-controls').style.display = 'block';
+  }
 });
 
 socket.on('number-drawn', number => {
