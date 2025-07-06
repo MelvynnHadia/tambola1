@@ -56,7 +56,9 @@ setMinBtn.onclick = () => {
 
 startBtn.onclick = () => socket.emit('host-start', { roomCode });
 drawBtn.onclick = () => socket.emit('host-draw', { roomCode });
-endBtn.onclick = () => location.reload();
+endBtn.onclick = () => {
+  socket.emit('host-end', { roomCode });
+};
 
 claimFullHouseBtn.onclick = () => claim('fullHouse');
 claimLucky5Btn.onclick = () => claim('lucky5');
@@ -142,6 +144,10 @@ socket.on('chat-msg', ({ name, message }) => {
   msg.innerText = `${name}: ${message}`;
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+socket.on('game-ended', () => {
+  location.reload();
 });
 
 function switchToLobby() {
