@@ -1,4 +1,4 @@
-const socket = io(window.location.origin);
+const socket = io(window.location.origin); // ✅ ensures same origin
 
 const screenJoin = document.getElementById('screen-join');
 const screenLobby = document.getElementById('screen-lobby');
@@ -56,9 +56,7 @@ setMinBtn.onclick = () => {
 
 startBtn.onclick = () => socket.emit('host-start', { roomCode });
 drawBtn.onclick = () => socket.emit('host-draw', { roomCode });
-endBtn.onclick = () => {
-  socket.emit('host-end', { roomCode });
-};
+endBtn.onclick = () => socket.emit('host-end', { roomCode }); // ✅ send to server
 
 claimFullHouseBtn.onclick = () => claim('fullHouse');
 claimLucky5Btn.onclick = () => claim('lucky5');
@@ -130,15 +128,10 @@ socket.on('number-drawn', number => {
 });
 
 socket.on('claim-winner', ({ name, type }) => {
-  const listId = `leaderboard-${type}`;
-  const list = document.getElementById(listId);
-  if (list) {
-    const li = document.createElement('li');
-    li.innerText = name;
-    list.appendChild(li);
-  }
+  const li = document.createElement('li');
+  li.innerText = `${type.toUpperCase()}: ${name}`;
+  leaderboard.appendChild(li);
 });
-
 
 socket.on('invalid-claim', () => {
   errorBox.style.display = 'inline-block';
@@ -151,6 +144,7 @@ socket.on('chat-msg', ({ name, message }) => {
   chatBox.scrollTop = chatBox.scrollHeight;
 });
 
+// ✅ Handle host ending game
 socket.on('game-ended', () => {
   location.reload();
 });
